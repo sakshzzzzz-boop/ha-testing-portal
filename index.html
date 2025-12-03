@@ -5,107 +5,20 @@
 <title>HA Testing Portal - Issue Tracker</title>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f6f0e8;
-        padding: 20px;
-    }
-
-    .header-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        margin-bottom: 15px;
-    }
-
-    .company-logo {
-        width: 85px;
-        height: 75px;
-        position: absolute;
-        left: 0;
-    }
-
-    .header-title {
-        text-align: center;
-    }
-
-    .form-container {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        margin: auto;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    table, th, td {
-        border: 2px solid #aaa;
-    }
-
-    th {
-        background: #e2b699;
-        padding: 8px;
-        text-align: left;
-        font-weight: bold;
-    }
-
-    td {
-        padding: 8px;
-    }
-
-    input, select, textarea {
-        width: 100%;
-        padding: 5px;
-        margin: 5px 0;
-    }
-
-    button {
-        padding: 10px 20px;
-        background: #c97b4e;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-
-    button:hover {
-        background: #a5623d;
-    }
-
-    .export-container {
-        margin-top: 10px;
-        text-align: left;  
-    }
-
-    .export-btn {
-        padding: 10px 20px;
-        background: #c97b4e;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
-    }
+    body { font-family: Arial; background: #f6f0e8; padding:20px; }
+    .form-container { background:#fff; padding:20px; border-radius:8px; width:80%; margin:auto; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    table, th, td { border:2px solid #aaa; }
+    th { background:#e2b699; padding:8px; }
+    td { padding:8px; }
+    input, select, textarea { width:100%; padding:5px; margin:5px 0; }
+    button { padding:10px 20px; background:#c97b4e; color:white; border:none; }
 </style>
 </head>
 
 <body>
 
-<div class="header-container">
-<img src="https://media.licdn.com/dms/image/v2/C560BAQHKJJ9_Cmqe0g/company-logo_200_200/company-logo_200_200/0/1630647980436?e=2147483647&v=beta&t=zh49lcrvu_4Khtt5_pMnWqlo1HmynDKTmV0S64G8QHk"
-     class="company-logo">
-
-<div class="header-title">
-    <h2>HA TESTING PORTAL</h2>
-    <h3>ISSUE TRACKER</h3>
-</div>
-</div>
+<h2 style="text-align:center">HA TESTING PORTAL – ISSUE TRACKER</h2>
 
 <div class="form-container">
 <h3>Add New Issue</h3>
@@ -150,11 +63,11 @@
 <table id="issueTable">
 <thead>
 <tr>
-    <th>SL NO.</th>
-    <th>Issue / Description</th>
+    <th>SL NO</th>
+    <th>Description</th>
     <th>Module</th>
     <th>Department</th>
-    <th>Issue Raised By</th>
+    <th>Raised By</th>
     <th>Date</th>
     <th>Status</th>
     <th>Priority</th>
@@ -164,106 +77,97 @@
 <tbody></tbody>
 </table>
 
-<div class="export-container">
-    <button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
-</div>
+<script type="module">
 
-<script>
-let issues = [];
+// ----------------- FIREBASE IMPORTS -------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, update } 
+        from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
-// Load saved issues from localStorage
-window.onload = function () {
-    const saved = localStorage.getItem("issues");
-    if (saved) {
-        issues = JSON.parse(saved);
-        issues.forEach(issue => addRow(issue));
-    }
+// ----------------- FIREBASE CONFIG --------------------
+const firebaseConfig = {
+    apiKey: "AIzaSyArTVcAzatZiXhY4QtkdUV6xtZxbbwJWqw",
+    authDomain: "ha-testing-portal.firebaseapp.com",
+    databaseURL: "https://ha-testing-portal-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "ha-testing-portal",
+    storageBucket: "ha-testing-portal.firebasestorage.app",
+    messagingSenderId: "210094909594",
+    appId: "1:210094909594:web:8c4885abb5dce21a4b5723"
 };
 
+// ----------------- INIT FIREBASE ----------------------
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const issuesRef = ref(db, "issues");
+
+// ----------------- ADD ISSUE --------------------------
 function addIssue() {
-    const issue = {
-        slno: issues.length + 1,
-        description: document.getElementById("description").value,
-        module: document.getElementById("module").value,
-        department: document.getElementById("department").value,
-        raisedBy: document.getElementById("raisedBy").value,
-        date: document.getElementById("date").value,
-        status: document.getElementById("status").value,
-        priority: document.getElementById("priority").value,
-        remarks: document.getElementById("remarks").value
+    let issue = {
+        description: description.value,
+        module: module.value,
+        department: department.value,
+        raisedBy: raisedBy.value,
+        date: date.value,
+        status: status.value,
+        priority: priority.value,
+        remarks: remarks.value
     };
 
-    if (!issue.description || !issue.module || !issue.department || !issue.raisedBy || !issue.date) {
-        alert("Please fill all required fields.");
-        return;
-    }
-
-    issues.push(issue);
-    saveIssues();
-    addRow(issue);
+    push(issuesRef, issue);
     document.getElementById("issueForm").reset();
 }
 
-// Add row to the table
-function addRow(issue) {
-    const table = document.getElementById("issueTable").getElementsByTagName("tbody")[0];
-    const newRow = table.insertRow();
+// ----------------- LOAD ISSUES ------------------------
+onValue(issuesRef, (snapshot) => {
+    const tableBody = document.querySelector("#issueTable tbody");
+    tableBody.innerHTML = "";
+    let slno = 1;
 
-    newRow.innerHTML = `
-<td>${issue.slno}</td>
-<td>${issue.description}</td>
-<td>${issue.module}</td>
-<td>${issue.department}</td>
-<td>${issue.raisedBy}</td>
-<td>${issue.date}</td>
+    snapshot.forEach(child => {
+        const id = child.key;
+        const issue = child.val();
 
-<td>
-    <select class="statusSelect">
-        <option ${issue.status === "Open" ? "selected" : ""}>Open</option>
-        <option ${issue.status === "In Progress" ? "selected" : ""}>In Progress</option>
-        <option ${issue.status === "Closed" ? "selected" : ""}>Closed</option>
-    </select>
-</td>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${slno++}</td>
+            <td>${issue.description}</td>
+            <td>${issue.module}</td>
+            <td>${issue.department}</td>
+            <td>${issue.raisedBy}</td>
+            <td>${issue.date}</td>
 
-<td>
-    <select class="prioritySelect">
-        <option ${issue.priority === "Low" ? "selected" : ""}>Low</option>
-        <option ${issue.priority === "Medium" ? "selected" : ""}>Medium</option>
-        <option ${issue.priority === "High" ? "selected" : ""}>High</option>
-    </select>
-</td>
+            <td>
+                <select class="status">
+                    <option ${issue.status=="Open"?"selected":""}>Open</option>
+                    <option ${issue.status=="In Progress"?"selected":""}>In Progress</option>
+                    <option ${issue.status=="Closed"?"selected":""}>Closed</option>
+                </select>
+            </td>
 
-<td>${issue.remarks}</td>
-`;
+            <td>
+                <select class="priority">
+                    <option ${issue.priority=="Low"?"selected":""}>Low</option>
+                    <option ${issue.priority=="Medium"?"selected":""}>Medium</option>
+                    <option ${issue.priority=="High"?"selected":""}>High</option>
+                </select>
+            </td>
 
-    // Status change → save to storage
-    newRow.querySelector(".statusSelect").addEventListener("change", function () {
-        issue.status = this.value;
-        saveIssues();
+            <td>${issue.remarks}</td>
+        `;
+
+        // UPDATE STATUS
+        row.querySelector(".status").addEventListener("change", e => {
+            update(ref(db, "issues/" + id), { status: e.target.value });
+        });
+
+        // UPDATE PRIORITY
+        row.querySelector(".priority").addEventListener("change", e => {
+            update(ref(db, "issues/" + id), { priority: e.target.value });
+        });
+
+        tableBody.appendChild(row);
     });
-
-    // Priority change → save
-    newRow.querySelector(".prioritySelect").addEventListener("change", function () {
-        issue.priority = this.value;
-        saveIssues();
-    });
-}
-
-// Save all issues back to localStorage
-function saveIssues() {
-    localStorage.setItem("issues", JSON.stringify(issues));
-}
-
-function exportToExcel() {
-    let table = document.getElementById("issueTable").outerHTML;
-    let file = new Blob([table], { type: "application/vnd.ms-excel" });
-    let url = URL.createObjectURL(file);
-
-    let a = document.createElement("a");
-    a.href = url;
-    a.download = "Issue_Tracker.xls";
-    a.click();
-}
+});
 </script>
 
 </body>
