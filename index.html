@@ -3,68 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <title>HA Testing Portal - Issue Tracker</title>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-database-compat.js"></script>
-
 <style>
-    body { font-family: Arial, sans-serif; background: #f6f0e8; padding: 20px; }
-    .header-container { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px; }
-    .company-logo { width: 85px; height: 75px; position: absolute; left: 0; }
-    .header-title { text-align: center; }
-    .form-container { background: #fff; padding: 20px; border-radius: 8px; width: 80%; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    table, th, td { border: 2px solid #aaa; }
-    th { background: #e2b699; padding: 8px; text-align: left; font-weight: bold; }
-    td { padding: 8px; }
-    input, select, textarea { width: 100%; padding: 5px; margin: 5px 0; }
-    button { padding: 10px 20px; background: #c97b4e; color: white; border: none; cursor: pointer; border-radius: 4px; }
-    button:hover { background: #a5623d; }
-    .export-container { margin-top: 10px; text-align: left; }
+body {
+    font-family: Arial, sans-serif;
+    background: #f6f0e8;
+    padding: 20px;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.company-logo {
+    width: 85px;
+    height: 75px;
+    position: absolute;
+    left: 0;
+}
+
+.header-title {
+    text-align: center;
+}
+
+.form-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    margin: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 2px solid #aaa;
+}
+
+th {
+    background: #e2b699;
+    padding: 8px;
+    text-align: left;
+    font-weight: bold;
+}
+
+td {
+    padding: 8px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 5px;
+    margin: 5px 0;
+}
+
+button {
+    padding: 10px 20px;
+    background: #c97b4e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background: #a5623d;
+}
+
+.export-container {
+    margin-top: 10px;
+    text-align: left;  
+}
+
+.export-btn {
+    padding: 10px 20px;
+    background: #c97b4e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
 </style>
+</head>
+<body>
+
+<div class="header-container">
+<img src="https://media.licdn.com/dms/image/v2/C560BAQHKJJ9_Cmqe0g/company-logo_200_200/company-logo_200_200/0/1630647980436?e=2147483647&v=beta&t=zh49lcrvu_4Khtt5_pMnWqlo1HmynDKTmV0S64G8QHk" 
+     class="company-logo">
+<div class="header-title">
+<h2>HA TESTING PORTAL</h2>
+<h3>ISSUE TRACKER</h3>
+</div>
+</div>
+
+<div class="form-container">
+<h3>Add New Issue</h3>
+
+<form id="issueForm">
+<label>Issue Description:</label>
+<textarea id="description" required></textarea>
+
+<label>Module:</label>
+<input type="text" id="module" required>
+
+<label>Department:</label>
+<input type="text" id="department" required>
+
+<label>Issue Raised By:</label>
+<input type="text" id="raisedBy" required>
+
+<label>Date:</label>
+<input type="date" id="date" required>
+
+<label>Status:</label>
+<select id="status">
+<option>Open</option>
+<option>In Progress</option>
+<option>Closed</option>
+</select>
+
+<label>Priority:</label>
+<select id="priority">
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
+</select>
+
+<label>Remarks:</label>
+<input type="text" id="remarks">
+
+<button type="button" onclick="addIssue()">Add Issue</button>
+</form>
+</div>
+
+<table id="issueTable">
+<thead>
+<tr>
+<th>SL NO.</th>
+<th>Issue / Description</th>
+<th>Module</th>
+<th>Department</th>
+<th>Issue Raised By</th>
+<th>Date</th>
+<th>Status</th>
+<th>Priority</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="export-container">
+<button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
+</div>
 
 <script>
-  // ---------------- Firebase Initialization ----------------
-  const firebaseConfig = {
-    apiKey: "AIzaSyArTVcAzatZiXhY4QtkdUV6xtZxbbwJWqw",
-    authDomain: "ha-testing-portal.firebaseapp.com",
-    databaseURL: "https://ha-testing-portal-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "ha-testing-portal",
-    storageBucket: "ha-testing-portal.firebasestorage.app",
-    messagingSenderId: "210094909594",
-    appId: "1:210094909594:web:8c4885abb5dce21a4b5723",
-    measurementId: "G-H6S46PTHSB"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+let issues = [];
 
-  // ---------------- Functions ----------------
+window.onload = function () {
+    const saved = localStorage.getItem("issues");
+    if (saved) {
+        issues = JSON.parse(saved);
+        issues.forEach(issue => addRow(issue));
+    }
+};
 
-  function addIssue() {
+function addIssue() {
     const issue = {
-      description: document.getElementById("description").value,
-      module: document.getElementById("module").value,
-      department: document.getElementById("department").value,
-      raisedBy: document.getElementById("raisedBy").value,
-      date: document.getElementById("date").value,
-      status: document.getElementById("status").value,
-      priority: document.getElementById("priority").value,
-      remarks: document.getElementById("remarks").value
+        slno: issues.length + 1,
+        description: document.getElementById("description").value,
+        module: document.getElementById("module").value,
+        department: document.getElementById("department").value,
+        raisedBy: document.getElementById("raisedBy").value,
+        date: document.getElementById("date").value,
+        status: document.getElementById("status").value,
+        priority: document.getElementById("priority").value,
+        remarks: document.getElementById("remarks").value
     };
 
     if (!issue.description || !issue.module || !issue.department || !issue.raisedBy || !issue.date) {
-      alert("Please fill all required fields.");
-      return;
+        alert("Please fill all required fields.");
+        return;
     }
 
-    const newIssueRef = db.ref('issues').push();
-    newIssueRef.set(issue)
-      .then(() => document.getElementById("issueForm").reset())
-      .catch(err => console.error(err));
-  }
+    issues.push(issue);
+    saveIssues();
+    addRow(issue);
+    document.getElementById("issueForm").reset();
+}
 
-  function exportToExcel() {
+function addRow(issue) {
+    const table = document.getElementById("issueTable").getElementsByTagName("tbody")[0];
+    const newRow = table.insertRow();
+
+    newRow.innerHTML = `
+<td>${issue.slno}</td>
+<td>${issue.description}</td>
+<td>${issue.module}</td>
+<td>${issue.department}</td>
+<td>${issue.raisedBy}</td>
+<td>${issue.date}</td>
+<td>
+  <select class="statusSelect">
+    <option ${issue.status === "Open" ? "selected" : ""}>Open</option>
+    <option ${issue.status === "In Progress" ? "selected" : ""}>In Progress</option>
+    <option ${issue.status === "Closed" ? "selected" : ""}>Closed</option>
+  </select>
+</td>
+<td>
+  <select class="prioritySelect">
+    <option ${issue.priority === "Low" ? "selected" : ""}>Low</option>
+    <option ${issue.priority === "Medium" ? "selected" : ""}>Medium</option>
+    <option ${issue.priority === "High" ? "selected" : ""}>High</option>
+  </select>
+</td>
+<td>${issue.remarks}</td>
+`;
+
+    // Update when Status changes
+    const statusSelect = newRow.querySelector(".statusSelect");
+    const prioritySelect = newRow.querySelector(".prioritySelect");
+
+    statusSelect.addEventListener("change", function () {
+        issue.status = this.value;
+        saveIssues();
+    });
+
+    prioritySelect.addEventListener("change", function () {
+        issue.priority = this.value;
+        saveIssues();
+    });
+
+    // Optional: disable dropdowns if closed
+    if(issue.status === "Closed") {
+        statusSelect.disabled = false; // keep editable if you want
+        prioritySelect.disabled = false; // keep editable if you want
+    }
+}
+
+function saveIssues() {
+    localStorage.setItem("issues", JSON.stringify(issues));
+}
+
+function exportToExcel() {
     let table = document.getElementById("issueTable").outerHTML;
     let file = new Blob([table], { type: "application/vnd.ms-excel" });
     let url = URL.createObjectURL(file);
@@ -72,108 +261,8 @@
     a.href = url;
     a.download = "Issue_Tracker.xls";
     a.click();
-  }
-
-  function renderTable(issuesData) {
-    const tbody = document.querySelector("#issueTable tbody");
-    tbody.innerHTML = "";
-    let slNo = 1;
-    for (let key in issuesData) {
-      const issue = issuesData[key];
-      const row = tbody.insertRow();
-      row.innerHTML = `
-        <td>${slNo++}</td>
-        <td>${issue.description}</td>
-        <td>${issue.module}</td>
-        <td>${issue.department}</td>
-        <td>${issue.raisedBy}</td>
-        <td>${issue.date}</td>
-        <td>${issue.status}</td>
-        <td>${issue.priority}</td>
-        <td>${issue.remarks}</td>
-      `;
-    }
-  }
-
-  // ---------------- Real-Time Listener ----------------
-  db.ref('issues').on('value', snapshot => {
-    const data = snapshot.val();
-    if (data) renderTable(data);
-    else document.querySelector("#issueTable tbody").innerHTML = "";
-  });
+}
 </script>
-
-</head>
-<body>
-
-<div class="header-container">
-  <img src="https://media.licdn.com/dms/image/v2/C560BAQHKJJ9_Cmqe0g/company-logo_200_200/company-logo_200_200/0/1630647980436?e=2147483647&v=beta&t=zh49lcrvu_4Khtt5_pMnWqlo1HmynDKTmV0S64G8QHk"
-       class="company-logo">
-  <div class="header-title">
-    <h2>HA TESTING PORTAL</h2>
-    <h3>ISSUE TRACKER</h3>
-  </div>
-</div>
-
-<div class="form-container">
-  <h3>Add New Issue</h3>
-  <form id="issueForm">
-    <label>Issue Description:</label>
-    <textarea id="description" required></textarea>
-
-    <label>Module:</label>
-    <input type="text" id="module" required>
-
-    <label>Department:</label>
-    <input type="text" id="department" required>
-
-    <label>Issue Raised By:</label>
-    <input type="text" id="raisedBy" required>
-
-    <label>Date:</label>
-    <input type="date" id="date" required>
-
-    <label>Status:</label>
-    <select id="status">
-      <option>Open</option>
-      <option>In Progress</option>
-      <option>Closed</option>
-    </select>
-
-    <label>Priority:</label>
-    <select id="priority">
-      <option>Low</option>
-      <option>Medium</option>
-      <option>High</option>
-    </select>
-
-    <label>Remarks:</label>
-    <input type="text" id="remarks">
-
-    <button type="button" onclick="addIssue()">Add Issue</button>
-  </form>
-</div>
-
-<table id="issueTable">
-  <thead>
-  <tr>
-    <th>SL NO.</th>
-    <th>Issue / Description</th>
-    <th>Module</th>
-    <th>Department</th>
-    <th>Issue Raised By</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Priority</th>
-    <th>Remarks</th>
-  </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<div class="export-container">
-  <button class="export-btn" onclick="exportToExcel()">Export to Excel</button>
-</div>
 
 </body>
 </html>
