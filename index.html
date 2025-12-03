@@ -85,8 +85,7 @@
 <body>
 
 <div class="header-container">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmPGnW5jbebWn1jpXVQiY75J9wcVBA74jHbQ&s"
-         class="company-logo">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmPGnW5jbebWn1jpXVQiY75J9wcVBA74jHbQ&s" class="company-logo">
     <div class="header-title">
         <h2>HA TESTING PORTAL</h2>
         <h3>ISSUE TRACKER</h3>
@@ -178,16 +177,17 @@ const issuesRef = ref(db, "issues");
 /* --------------------- ADD ISSUE --------------------- */
 window.addIssue = function () {
 
-    const issue = {
-        description: description.value,
-        module: module.value,
-        department: department.value,
-        raisedBy: raisedBy.value,
-        date: date.value,
-        status: status.value,
-        priority: priority.value,
-        remarks: remarks.value
-    };
+const issue = {
+    description: document.getElementById("description").value,
+    module: document.getElementById("module").value,
+    department: document.getElementById("department").value,
+    raisedBy: document.getElementById("raisedBy").value,
+    date: document.getElementById("date").value,
+    status: document.getElementById("status").value,
+    priority: document.getElementById("priority").value,
+    remarks: document.getElementById("remarks").value
+};
+
 
     if (!issue.description || !issue.module || !issue.department || !issue.raisedBy || !issue.date) {
         alert("Please fill all required fields.");
@@ -270,8 +270,3 @@ window.exportToExcel = function () {
 
 </body>
 </html>
-
-
-
-
-
